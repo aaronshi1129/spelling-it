@@ -1,0 +1,1602 @@
+<html><head><base href=".">
+<title>Spelling Bee - Vocabulary Game</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .game-container {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .word-display {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: #2c3e50;
+    min-height: 3rem;
+  }
+
+  #chineseTranslation {
+    font-size: 1.8rem;
+    color: #34495e;
+    margin: 1rem 0;
+    font-weight: 500;
+  }
+
+  .input-area {
+    margin: 1rem 0;
+  }
+
+  input {
+    padding: 0.8rem;
+    font-size: 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 300px;
+    margin-bottom: 1rem;
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+    background: #2980b9;
+  }
+
+  button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+  }
+
+  .score {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: #34495e;
+  }
+
+  .stats {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+    color: #34495e;
+  }
+
+  .feedback {
+    min-height: 2rem;
+    margin: 1rem 0;
+    font-weight: bold;
+  }
+
+  .correct {
+    color: #27ae60;
+    animation: popIn 0.5s ease;
+  }
+
+  .incorrect {
+    color: #c0392b;
+    animation: shake 0.5s ease;
+  }
+
+  .bee-icon {
+    font-size: 2rem;
+    transition: transform 0.5s ease;
+    margin-top: 1rem;
+  }
+
+  .bee-icon::after {
+    content: '□';
+  }
+
+  .bee-grow {
+    animation: growBee 0.5s ease forwards;
+  }
+
+  .level-up {
+    color: #f39c12;
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    animation: popIn 0.5s ease;
+  }
+
+  .timer {
+    font-size: 1.2rem;
+    color: #34495e;
+    margin: 1rem 0;
+  }
+
+  footer {
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+  }
+
+  @keyframes growBee {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    75% { transform: scale(1.3); }
+    100% { transform: scale(1.25); }
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Spelling Bee (Basic IT)</h1>
+    <div class="timer" id="timer">Time: 00:00</div>
+    <p id="chineseTranslation"></p>
+    <div class="word-display" id="wordDisplay">Press Start to begin!</div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Type the word here..." disabled>
+      <br>
+      <button id="startBtn">Start Game</button>
+      <button id="speakBtn" disabled>Hear Word</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="level-up" id="levelUp"></div>
+    <div class="score" id="score">Score: 0</div>
+    <div class="stats" id="stats">Correct: 0 | Wrong: 0</div>
+    <div class="bee-icon" id="beeIcon">&#x1f41d;</div>
+  </div>
+  <footer>
+    Author: Aaron Shi. Released in 2024.
+  </footer>
+
+<script>const words = [{
+  word: "access",
+  pos: "noun/verb",
+  chinese: "存取(資料)；出入口"
+}, {
+  word: "accessibility",
+  pos: "noun",
+  chinese: "接取權；可接取性；可存取性；取用權"
+}, {
+  word: "account",
+  pos: "noun",
+  chinese: "帳號；帳戶；帳目；會計科目"
+}, {
+  word: "adder",
+  pos: "noun",
+  chinese: "加法器"
+}, {
+  word: "addiction",
+  pos: "noun",
+  chinese: "成癮；上癮；沉溺；沉迷"
+}, {
+  word: "address",
+  pos: "noun",
+  chinese: "位址"
+}, {
+  word: "AI",
+  pos: "noun",
+  chinese: "人工智慧(縮寫)"
+}, {
+  word: "algorithm",
+  pos: "noun",
+  chinese: "演算法"
+}, {
+  word: "analog",
+  pos: "noun/adjective",
+  chinese: "類比"
+}, {
+  word: "AND",
+  pos: "conjunction",
+  chinese: "及"
+}, {
+  word: "Apache",
+  pos: "noun",
+  chinese: "Apache伺服器"
+}, {
+  word: "APPLE II",
+  pos: "noun",
+  chinese: "APPLE II電腦"
+}, {
+  word: "ARPAnet",
+  pos: "noun",
+  chinese: "ARPAnet網路"
+}, {
+  word: "array",
+  pos: "noun",
+  chinese: "陣列"
+}, {
+  word: "artificial intelligence",
+  pos: "noun",
+  chinese: "人工智慧"
+}, {
+  word: "assembler",
+  pos: "noun",
+  chinese: "組合程式；組譯器"
+}, {
+  word: "attacker",
+  pos: "noun",
+  chinese: "攻擊者"
+}, {
+  word: "availability",
+  pos: "noun",
+  chinese: "可用性"
+}, {
+  word: "backbone",
+  pos: "noun",
+  chinese: "骨幹；基幹"
+}, {
+  word: "background",
+  pos: "noun",
+  chinese: "背景"
+}, {
+  word: "backtracking",
+  pos: "noun",
+  chinese: "回溯（法）"
+}, {
+  word: "bandwidth",
+  pos: "noun",
+  chinese: "頻寬"
+}, {
+  word: "barcode",
+  pos: "noun",
+  chinese: "條碼"
+}, {
+  word: "base",
+  pos: "noun",
+  chinese: "基；庫；基數；基底"
+}, {
+  word: "battery",
+  pos: "noun",
+  chinese: "電瓶；蓄電池"
+}, {
+  word: "bitmap",
+  pos: "noun",
+  chinese: "點陣圖；位元映像"
+}, {
+  word: "blackboard",
+  pos: "noun",
+  chinese: "黑板"
+}, {
+  word: "Blog",
+  pos: "noun",
+  chinese: "部落格、網誌、博客"
+}, {
+  word: "book",
+  pos: "noun",
+  chinese: "書；書籍"
+}, {
+  word: "bookmark",
+  pos: "noun",
+  chinese: "書籤"
+}, {
+  word: "Boolean",
+  pos: "noun/adjective",
+  chinese: "布林；布耳的"
+}, {
+  word: "Botnet",
+  pos: "noun",
+  chinese: "殭屍網路"
+}, {
+  word: "bottom",
+  pos: "noun",
+  chinese: "底端"
+}, {
+  word: "branch",
+  pos: "noun",
+  chinese: "分支"
+}, {
+  word: "bridge",
+  pos: "noun",
+  chinese: "橋接器"
+}, {
+  word: "brightness",
+  pos: "noun",
+  chinese: "亮度"
+}, {
+  word: "browser",
+  pos: "noun",
+  chinese: "瀏覽器"
+}, {
+  word: "buffer",
+  pos: "noun",
+  chinese: "緩衝器"
+}, {
+  word: "bug",
+  pos: "noun",
+  chinese: "錯誤"
+}, {
+  word: "byte",
+  pos: "noun",
+  chinese: "位元組；拜"
+}, {
+  word: "cache",
+  pos: "noun/verb",
+  chinese: "快取；快取(記憶體)"
+}, {
+  word: "calendar",
+  pos: "noun",
+  chinese: "日曆；陽曆"
+}, {
+  word: "chair",
+  pos: "noun",
+  chinese: "椅子；(會議的)主席"
+}, {
+  word: "chalk",
+  pos: "noun",
+  chinese: "粉筆"
+}, {
+  word: "Character",
+  pos: "noun",
+  chinese: "字符；字元"
+}, {
+  word: "charger",
+  pos: "noun",
+  chinese: "充電器"
+}, {
+  word: "charset",
+  pos: "noun",
+  chinese: "字元集"
+}, {
+  word: "chat",
+  pos: "verb",
+  chinese: "網路連結聊天"
+}, {
+  word: "child",
+  pos: "noun",
+  chinese: "子節點"
+}, {
+  word: "chip",
+  pos: "noun",
+  chinese: "晶片"
+}, {
+  word: "chipset",
+  pos: "noun",
+  chinese: "晶片組"
+}, {
+  word: "ciphertext",
+  pos: "noun",
+  chinese: "密文"
+}, {
+  word: "client",
+  pos: "noun",
+  chinese: "用戶端"
+}, {
+  word: "clock",
+  pos: "noun",
+  chinese: "時脈"
+}, {
+  word: "cluster",
+  pos: "noun",
+  chinese: "叢集；群集"
+}, {
+  word: "coding",
+  pos: "noun",
+  chinese: "編碼"
+}, {
+  word: "collision",
+  pos: "noun",
+  chinese: "碰撞"
+}, {
+  word: "command",
+  pos: "noun",
+  chinese: "指令"
+}, {
+  word: "compass",
+  pos: "noun",
+  chinese: "羅盤；指南針；圓規"
+}, {
+  word: "compiler",
+  pos: "noun",
+  chinese: "編譯程式；編譯器"
+}, {
+  word: "complement",
+  pos: "noun",
+  chinese: "補數"
+}, {
+  word: "computation",
+  pos: "noun",
+  chinese: "運算"
+}, {
+  word: "computer",
+  pos: "noun",
+  chinese: "電腦；計算機"
+}, {
+  word: "computer system",
+  pos: "noun",
+  chinese: "電腦系統"
+}, {
+  word: "connection",
+  pos: "noun",
+  chinese: "連接"
+}, {
+  word: "contrast",
+  pos: "noun",
+  chinese: "對比"
+}, {
+  word: "cookie",
+  pos: "noun",
+  chinese: "訊錄；網路餅乾"
+}, {
+  word: "core",
+  pos: "noun",
+  chinese: "核心"
+}, {
+  word: "cracker",
+  pos: "noun",
+  chinese: "劊客"
+}, {
+  word: "crayon",
+  pos: "noun",
+  chinese: "蠟筆"
+}, {
+  word: "currency",
+  pos: "noun",
+  chinese: "貨幣；流通"
+}, {
+  word: "cyan",
+  pos: "noun",
+  chinese: "青色；（印刷）四原色之一"
+}, {
+  word: "magenta",
+  pos: "noun",
+  chinese: "洋紅色；（印刷）四原色之一"
+}, {
+  word: "yellow",
+  pos: "noun",
+  chinese: "黃；（印刷）四原色之一"
+}, {
+  word: "black",
+  pos: "noun",
+  chinese: "黑色；（印刷）四原色之一"
+}, {
+  word: "cylinder",
+  pos: "noun",
+  chinese: "磁柱；圓柱"
+}, {
+  word: "data",
+  pos: "noun",
+  chinese: "資料"
+}, {
+  word: "database",
+  pos: "noun",
+  chinese: "資料庫"
+}, {
+  word: "debug",
+  pos: "verb",
+  chinese: "除錯"
+}, {
+  word: "decimal",
+  pos: "noun",
+  chinese: "十進位"
+}, {
+  word: "decode",
+  pos: "verb",
+  chinese: "解碼"
+}, {
+  word: "decoder",
+  pos: "noun",
+  chinese: "解碼器"
+}, {
+  word: "definiteness",
+  pos: "noun",
+  chinese: "明確性"
+}, {
+  word: "delay",
+  pos: "noun",
+  chinese: "延遲"
+}, {
+  word: "desk",
+  pos: "noun",
+  chinese: "桌子"
+}, {
+  word: "desktop",
+  pos: "noun",
+  chinese: "桌面"
+}, {
+  word: "dictionary",
+  pos: "noun",
+  chinese: "字典"
+}, {
+  word: "digital",
+  pos: "adjective/noun",
+  chinese: "數位的；數位"
+}, {
+  word: "digitize",
+  pos: "verb",
+  chinese: "數位化"
+}, {
+  word: "directory",
+  pos: "noun",
+  chinese: "目錄"
+}, {
+  word: "display",
+  pos: "noun/verb",
+  chinese: "顯示器；顯示"
+}, {
+  word: "distributions",
+  pos: "noun",
+  chinese: "發行套件"
+}, {
+  word: "easel",
+  pos: "noun",
+  chinese: "畫架"
+}, {
+  word: "encyclopedia",
+  pos: "noun",
+  chinese: "百科全書"
+}, {
+  word: "eraser",
+  pos: "noun",
+  chinese: "橡皮擦；黑板擦；板擦"
+}, {
+  word: "Exabyte",
+  pos: "noun",
+  chinese: "艾位元組"
+}, {
+  word: "execute",
+  pos: "verb",
+  chinese: "執行"
+}, {
+  word: "extranet",
+  pos: "noun",
+  chinese: "商際網路；企業間網路"
+}, {
+  word: "fetch",
+  pos: "verb",
+  chinese: "擷取"
+}, {
+  word: "fiber",
+  pos: "noun",
+  chinese: "纖維；纖維物質；纖維質料"
+}, {
+  word: "file",
+  pos: "noun",
+  chinese: "文檔；檔案"
+}, {
+  word: "finiteness",
+  pos: "noun",
+  chinese: "有限性"
+}, {
+  word: "firewall",
+  pos: "noun",
+  chinese: "防火牆"
+}, {
+  word: "firewire",
+  pos: "noun",
+  chinese: "火線"
+}, {
+  word: "firmware",
+  pos: "noun",
+  chinese: "韌體"
+}, {
+  word: "folder",
+  pos: "noun",
+  chinese: "資料夾"
+}, {
+  word: "format",
+  pos: "noun/verb",
+  chinese: "格式；製作格式"
+}, {
+  word: "formatting",
+  pos: "noun",
+  chinese: "格式化"
+}, {
+  word: "frame",
+  pos: "noun",
+  chinese: "框；資訊框"
+}, {
+  word: "freeware",
+  pos: "noun",
+  chinese: "免費軟體"
+}, {
+  word: "front",
+  pos: "noun",
+  chinese: "前端"
+}, {
+  word: "gamepad",
+  pos: "noun",
+  chinese: "遊戲台"
+}, {
+  word: "gateway",
+  pos: "noun",
+  chinese: "閘道器"
+}, {
+  word: "gigabit",
+  pos: "noun",
+  chinese: "吉位元；十億位元"
+}, {
+  word: "gigahertz",
+  pos: "noun",
+  chinese: "吉赫；十萬萬赫"
+}, {
+  word: "gigabyte",
+  pos: "noun",
+  chinese: "吉位元組；十億位元組"
+}, {
+  word: "globe",
+  pos: "noun",
+  chinese: "地球；地球儀"
+}, {
+  word: "hardware",
+  pos: "noun",
+  chinese: "硬體"
+}, {
+  word: "http",
+  pos: "noun",
+  chinese: "超文字傳輸協定"
+}, {
+  word: "https",
+  pos: "noun",
+  chinese: "安全超文字傳輸協定"
+}, {
+  word: "hub",
+  pos: "noun",
+  chinese: "集線器"
+}, {
+  word: "integer",
+  pos: "noun",
+  chinese: "整數"
+}, {
+  word: "integrity",
+  pos: "noun",
+  chinese: "完整性"
+}, {
+  word: "Internet",
+  pos: "noun",
+  chinese: "互聯網；網際網路"
+}, {
+  word: "InterNIC",
+  pos: "noun",
+  chinese: "美國網際網路資訊中心；網際網路域名管理中心"
+}, {
+  word: "interpreter",
+  pos: "noun",
+  chinese: "直譯器；解譯器"
+}, {
+  word: "interrupt",
+  pos: "noun/verb",
+  chinese: "中斷；岔斷"
+}, {
+  word: "Intranet",
+  pos: "noun",
+  chinese: "（企業）內部網路"
+}, {
+  word: "intrusion",
+  pos: "noun",
+  chinese: "侵入"
+}, {
+  word: "iOS",
+  pos: "noun",
+  chinese: "（蘋果）行動設備作業系統"
+}, {
+  word: "IoT",
+  pos: "noun",
+  chinese: "物聯網"
+}, {
+  word: "iPad",
+  pos: "noun",
+  chinese: "一種掌上平板電腦"
+}, {
+  word: "kernel",
+  pos: "noun",
+  chinese: "核心"
+}, {
+  word: "key",
+  pos: "noun",
+  chinese: "鍵；鑰；關鍵"
+}, {
+  word: "keyboard",
+  pos: "noun",
+  chinese: "鍵盤"
+}, {
+  word: "keylogger",
+  pos: "noun",
+  chinese: "鍵盤側錄程式"
+}, {
+  word: "kilobyte",
+  pos: "noun",
+  chinese: "千位元組(單位)"
+}, {
+  word: "laptop",
+  pos: "noun",
+  chinese: "膝上型電腦(簡稱)；筆記型電腦(簡稱)"
+}, {
+  word: "lens",
+  pos: "noun",
+  chinese: "透鏡"
+}, {
+  word: "light",
+  pos: "noun",
+  chinese: "燈；光線"
+}, {
+  word: "Line",
+  pos: "noun",
+  chinese: "一種通訊軟體"
+}, {
+  word: "Linux",
+  pos: "noun",
+  chinese: "Linux 作業系統"
+}, {
+  word: "login",
+  pos: "verb/noun",
+  chinese: "登入"
+}, {
+  word: "logout",
+  pos: "verb/noun",
+  chinese: "註銷；登出"
+}, {
+  word: "look at",
+  pos: "verb",
+  chinese: "看；注意看"
+}, {
+  word: "loop",
+  pos: "noun",
+  chinese: "迴路；環；循環；環路"
+}, {
+  word: "machine learning",
+  pos: "noun",
+  chinese: "機器學習"
+}, {
+  word: "magnet",
+  pos: "noun",
+  chinese: "磁鐵"
+}, {
+  word: "mail",
+  pos: "noun",
+  chinese: "郵件"
+}, {
+  word: "mainframe",
+  pos: "noun",
+  chinese: "主機；大型電腦"
+}, {
+  word: "malware",
+  pos: "noun",
+  chinese: "惡意程式"
+}, {
+  word: "mantissa",
+  pos: "noun",
+  chinese: "（對數的）假數；尾數；定值部；係數"
+}, {
+  word: "marker",
+  pos: "noun",
+  chinese: "馬克筆；做記號的工具"
+}, {
+  word: "mask",
+  pos: "noun",
+  chinese: "遮罩；遮蔽"
+}, {
+  word: "Mbps",
+  pos: "noun",
+  chinese: "每秒百萬位元"
+}, {
+  word: "megabyte",
+  pos: "noun",
+  chinese: "百萬位元組(單位)"
+}, {
+  word: "memory",
+  pos: "noun",
+  chinese: "記憶體"
+}, {
+  word: "microcomputer",
+  pos: "noun",
+  chinese: "微電腦；微算機；微（型）計算機"
+}, {
+  word: "microcontroller",
+  pos: "noun",
+  chinese: "微控器"
+}, {
+  word: "microphone",
+  pos: "noun",
+  chinese: "麥克風；話筒；微音器；擴音器"
+}, {
+  word: "microprocessor",
+  pos: "noun",
+  chinese: "微處理器；微處理機"
+}, {
+  word: "Microsoft",
+  pos: "noun",
+  chinese: "微軟；微軟公司"
+}, {
+  word: "microwave",
+  pos: "noun",
+  chinese: "微波"
+}, {
+  word: "mnemonics",
+  pos: "noun",
+  chinese: "輔助記憶碼；助憶符；記憶術"
+}, {
+  word: "modem",
+  pos: "noun",
+  chinese: "數據機"
+}, {
+  word: "module",
+  pos: "noun",
+  chinese: "模組；程序塊"
+}, {
+  word: "monitor",
+  pos: "noun",
+  chinese: "監視器；監聽員；顯示器；監視程式；監督"
+}, {
+  word: "motherboard",
+  pos: "noun",
+  chinese: "主機板；母板"
+}, {
+  word: "mouse",
+  pos: "noun",
+  chinese: "滑鼠；游標控制器；鼠標器"
+}, {
+  word: "MPEG-4",
+  pos: "noun",
+  chinese: "動態圖像第 4 代(簡稱)"
+}, {
+  word: "multimedia",
+  pos: "noun",
+  chinese: "多媒體"
+}, {
+  word: "multi-touch",
+  pos: "noun",
+  chinese: "多點觸控"
+}, {
+  word: "nanometer",
+  pos: "noun",
+  chinese: "奈米"
+}, {
+  word: "nanosecond",
+  pos: "noun",
+  chinese: "奈秒"
+}, {
+  word: "netbook",
+  pos: "noun",
+  chinese: "隨身型易網機；輕省筆電"
+}, {
+  word: "nettop",
+  pos: "noun",
+  chinese: "桌上型易網機"
+}, {
+  word: "network",
+  pos: "noun",
+  chinese: "網路"
+}, {
+  word: "node",
+  pos: "noun",
+  chinese: "節點"
+}, {
+  word: "noncommercial",
+  pos: "adjective",
+  chinese: "非商業性"
+}, {
+  word: "NOT",
+  pos: "conjunction",
+  chinese: "非；反(邏輯)"
+}, {
+  word: "notebook",
+  pos: "noun",
+  chinese: "筆記本；筆記型電腦(簡稱)"
+}, {
+  word: "online",
+  pos: "adjective/adverb",
+  chinese: "線上；連線作業的；(在)線上的"
+}, {
+  word: "opcode",
+  pos: "noun",
+  chinese: "運算碼；作業碼"
+}, {
+  word: "operand",
+  pos: "noun",
+  chinese: "運算元"
+}, {
+  word: "OR",
+  pos: "conjunction",
+  chinese: "或(邏輯)"
+}, {
+  word: "output",
+  pos: "noun",
+  chinese: "輸出"
+}, {
+  word: "packet",
+  pos: "noun",
+  chinese: "分封；封包"
+}, {
+  word: "pad",
+  pos: "noun",
+  chinese: "平板"
+}, {
+  word: "paging",
+  pos: "noun",
+  chinese: "分頁"
+}, {
+  word: "paper",
+  pos: "noun",
+  chinese: "紙張；報紙"
+}, {
+  word: "parent",
+  pos: "noun",
+  chinese: "上代；父；母；親節點"
+}, {
+  word: "partition",
+  pos: "noun/verb",
+  chinese: "分區；分割；區間；劃分"
+}, {
+  word: "Pascal",
+  pos: "noun",
+  chinese: "巴斯卡語言"
+}, {
+  word: "Pascaline",
+  pos: "noun",
+  chinese: "Pascaline 計算機"
+}, {
+  word: "password",
+  pos: "noun",
+  chinese: "密碼"
+}, {
+  word: "pen",
+  pos: "noun",
+  chinese: "筆；鋼筆"
+}, {
+  word: "pencil",
+  pos: "noun",
+  chinese: "鉛筆"
+}, {
+  word: "per minute",
+  pos: "phrase",
+  chinese: "每分鐘"
+}, {
+  word: "per second",
+  pos: "phrase",
+  chinese: "每秒鐘"
+}, {
+  word: "peripheral",
+  pos: "noun/adjective",
+  chinese: "周邊設備；周圍的"
+}, {
+  word: "petabyte",
+  pos: "noun",
+  chinese: "拍位元組；千兆位元組"
+}, {
+  word: "phishing",
+  pos: "noun",
+  chinese: "網路釣魚"
+}, {
+  word: "picture",
+  pos: "noun",
+  chinese: "畫；畫像；圖片；照片"
+}, {
+  word: "pixel",
+  pos: "noun",
+  chinese: "像素"
+}, {
+  word: "plaintext",
+  pos: "noun",
+  chinese: "明文"
+}, {
+  word: "plasma",
+  pos: "noun",
+  chinese: "電漿"
+}, {
+  word: "platter",
+  pos: "noun",
+  chinese: "磁盤"
+}, {
+  word: "plug in",
+  pos: "verb",
+  chinese: "插上...的插頭以接通電源"
+}, {
+  word: "polling",
+  pos: "noun",
+  chinese: "輪詢"
+}, {
+  word: "polymorphic",
+  pos: "adjective",
+  chinese: "多形的"
+}, {
+  word: "pop",
+  pos: "verb",
+  chinese: "彈出"
+}, {
+  word: "port",
+  pos: "noun",
+  chinese: "通訊埠；連接埠"
+}, {
+  word: "poster",
+  pos: "noun",
+  chinese: "海報；招貼；布告；驛馬"
+}, {
+  word: "printer",
+  pos: "noun",
+  chinese: "印表機"
+}, {
+  word: "privacy",
+  pos: "noun",
+  chinese: "隱私"
+}, {
+  word: "process",
+  pos: "noun",
+  chinese: "行程；程序"
+}, {
+  word: "program",
+  pos: "noun",
+  chinese: "程式"
+}, {
+  word: "programming",
+  pos: "noun",
+  chinese: "程式設計"
+}, {
+  word: "projector",
+  pos: "noun",
+  chinese: "投影機"
+}, {
+  word: "protection",
+  pos: "noun",
+  chinese: "保護"
+}, {
+  word: "protocol",
+  pos: "noun",
+  chinese: "協定；協議"
+}, {
+  word: "push",
+  pos: "verb",
+  chinese: "推入"
+}, {
+  word: "quantization",
+  pos: "noun",
+  chinese: "量化"
+}, {
+  word: "quantize",
+  pos: "verb",
+  chinese: "量化"
+}, {
+  word: "queue",
+  pos: "noun",
+  chinese: "佇列"
+}, {
+  word: "radio",
+  pos: "noun",
+  chinese: "收音機；無線電"
+}, {
+  word: "rear",
+  pos: "noun",
+  chinese: "末端"
+}, {
+  word: "register",
+  pos: "noun",
+  chinese: "暫存器"
+}, {
+  word: "relevance",
+  pos: "noun",
+  chinese: "關聯性"
+}, {
+  word: "repeater",
+  pos: "noun",
+  chinese: "中繼器"
+}, {
+  word: "resolution",
+  pos: "noun",
+  chinese: "解析度"
+}, {
+  word: "roadmap",
+  pos: "noun",
+  chinese: "地圖；路徑圖"
+}, {
+  word: "robot",
+  pos: "noun",
+  chinese: "機器人"
+}, {
+  word: "root",
+  pos: "noun",
+  chinese: "根"
+}, {
+  word: "router",
+  pos: "noun",
+  chinese: "路由器"
+}, {
+  word: "routing",
+  pos: "noun",
+  chinese: "路由"
+}, {
+  word: "sample",
+  pos: "noun",
+  chinese: "取樣；樣本"
+}, {
+  word: "sampling",
+  pos: "noun",
+  chinese: "取樣；抽樣"
+}, {
+  word: "save",
+  pos: "verb",
+  chinese: "儲存"
+}, {
+  word: "scanner",
+  pos: "noun",
+  chinese: "掃描器"
+}, {
+  word: "schedule",
+  pos: "noun",
+  chinese: "時間表；課程表"
+}, {
+  word: "Scratch",
+  pos: "noun",
+  chinese: "一種圖形化程式設計器；Scratch 程式"
+}, {
+  word: "screen",
+  pos: "noun",
+  chinese: "投影幕；屏幕"
+}, {
+  word: "script",
+  pos: "noun",
+  chinese: "腳本"
+}, {
+  word: "sector",
+  pos: "noun",
+  chinese: "磁區"
+}, {
+  word: "selection",
+  pos: "noun",
+  chinese: "選擇"
+}, {
+  word: "seminar",
+  pos: "noun",
+  chinese: "研究班；研習會；研討會"
+}, {
+  word: "sensor",
+  pos: "noun",
+  chinese: "感應器"
+}, {
+  word: "sequence",
+  pos: "noun",
+  chinese: "循序"
+}, {
+  word: "server",
+  pos: "noun",
+  chinese: "伺服器"
+}, {
+  word: "shareware",
+  pos: "noun",
+  chinese: "共享軟體；共用軟體"
+}, {
+  word: "shell",
+  pos: "noun",
+  chinese: "殼；外殼"
+}, {
+  word: "Skype",
+  pos: "noun",
+  chinese: "一種通訊軟體；一種通訊軟體可呼叫手機或座機"
+}, {
+  word: "sniffer",
+  pos: "noun",
+  chinese: "竊聽者"
+}, {
+  word: "software",
+  pos: "noun",
+  chinese: "軟體"
+}, {
+  word: "sound",
+  pos: "noun",
+  chinese: "聲音"
+}, {
+  word: "spam",
+  pos: "noun",
+  chinese: "垃圾郵件"
+}, {
+  word: "speaker",
+  pos: "noun",
+  chinese: "喇叭；揚聲器；擴音機"
+}, {
+  word: "speed",
+  pos: "noun",
+  chinese: "速度"
+}, {
+  word: "spyware",
+  pos: "noun",
+  chinese: "間諜軟體"
+}, {
+  word: "stack",
+  pos: "noun",
+  chinese: "堆疊"
+}, {
+  word: "stationery",
+  pos: "noun",
+  chinese: "文具；信紙"
+}, {
+  word: "subnet",
+  pos: "noun",
+  chinese: "子網路"
+}, {
+  word: "switch",
+  pos: "noun/verb",
+  chinese: "交換器；開關；交換"
+}, {
+  word: "system",
+  pos: "noun",
+  chinese: "系統"
+}, {
+  word: "table",
+  pos: "noun",
+  chinese: "桌子；長桌；圓桌"
+}, {
+  word: "tablet",
+  pos: "noun",
+  chinese: "平板電腦(簡稱)；藥片；小片；寫板；碑"
+}, {
+  word: "tags",
+  pos: "noun",
+  chinese: "標記"
+}, {
+  word: "tail",
+  pos: "noun",
+  chinese: "尾端；尾"
+}, {
+  word: "taskbar",
+  pos: "noun",
+  chinese: "工作列"
+}, {
+  word: "telemedicine",
+  pos: "noun",
+  chinese: "遠距醫療"
+}, {
+  word: "television",
+  pos: "noun",
+  chinese: "電視機；電視節目；電視行業"
+}, {
+  word: "telnet",
+  pos: "noun",
+  chinese: "遠端登入協定"
+}, {
+  word: "terabyte",
+  pos: "noun",
+  chinese: "兆位元組"
+}, {
+  word: "terminal",
+  pos: "noun",
+  chinese: "終端機"
+}, {
+  word: "terminator",
+  pos: "noun",
+  chinese: "終接器"
+}, {
+  word: "text",
+  pos: "noun",
+  chinese: "文字；正文；本文"
+}, {
+  word: "threads",
+  pos: "noun",
+  chinese: "執行緒"
+}, {
+  word: "top",
+  pos: "noun",
+  chinese: "頂端；頂"
+}, {
+  word: "track",
+  pos: "noun",
+  chinese: "磁軌"
+}, {
+  word: "tree",
+  pos: "noun",
+  chinese: "樹狀；樹狀結構"
+}, {
+  word: "Trojan",
+  pos: "noun",
+  chinese: "木馬程式"
+}, {
+  word: "Turing",
+  pos: "noun",
+  chinese: "杜林；圖靈"
+}, {
+  word: "turn down",
+  pos: "verb",
+  chinese: "關小；調低"
+}, {
+  word: "turn off",
+  pos: "verb",
+  chinese: "關掉"
+}, {
+  word: "turn on",
+  pos: "verb",
+  chinese: "打開；發動"
+}, {
+  word: "turn up",
+  pos: "verb",
+  chinese: "開大；上升"
+}, {
+  word: "Unicode",
+  pos: "noun",
+  chinese: "萬國碼"
+}, {
+  word: "UNIX",
+  pos: "noun",
+  chinese: "UNIX 作業系統"
+}, {
+  word: "Unix-like",
+  pos: "adjective",
+  chinese: "類 Unix 的作業系統"
+}, {
+  word: "upload",
+  pos: "verb",
+  chinese: "上傳；上載"
+}, {
+  word: "URL",
+  pos: "noun",
+  chinese: "統一格式資源定位"
+}, {
+  word: "user",
+  pos: "noun",
+  chinese: "用戶；使用者"
+}, {
+  word: "user account",
+  pos: "noun",
+  chinese: "使用者帳號"
+}, {
+  word: "user friendly",
+  pos: "adjective",
+  chinese: "使用者親和性；用戶滿意介面"
+}, {
+  word: "user interface",
+  pos: "noun",
+  chinese: "使用者介面；用戶介面"
+}, {
+  word: "user password",
+  pos: "noun",
+  chinese: "使用者密碼"
+}, {
+  word: "variable",
+  pos: "noun",
+  chinese: "變數"
+}, {
+  word: "vector",
+  pos: "noun",
+  chinese: "向量"
+}, {
+  word: "video",
+  pos: "noun",
+  chinese: "錄像；視頻；錄影"
+}, {
+  word: "virus",
+  pos: "noun",
+  chinese: "病毒；電腦病毒"
+}, {
+  word: "wafer",
+  pos: "noun",
+  chinese: "晶圓"
+}, {
+  word: "web",
+  pos: "noun",
+  chinese: "網絡"
+}, {
+  word: "web page",
+  pos: "noun",
+  chinese: "網頁"
+}, {
+  word: "webinar",
+  pos: "noun",
+  chinese: "網路研討會(議)；網路研習會"
+}, {
+  word: "website",
+  pos: "noun",
+  chinese: "網站"
+}, {
+  word: "WeChat",
+  pos: "noun",
+  chinese: "微信---一種通訊軟"
+}, {
+  word: "weight",
+  pos: "noun",
+  chinese: "權重；權數；重量；加權；砝碼；權（衡）"
+}, {
+  word: "whiteboard",
+  pos: "noun",
+  chinese: "白板"
+}, {
+  word: "Wiki",
+  pos: "noun",
+  chinese: "維基；共筆（一種可在網路上開放多人協同創作的超文本系統）"
+}, {
+  word: "Wikipedia",
+  pos: "noun",
+  chinese: "維基百科全書；維基百科"
+}, {
+  word: "window",
+  pos: "noun",
+  chinese: "視窗"
+}, {
+  word: "wireless",
+  pos: "adjective",
+  chinese: "無線；無線的；無線電的"
+}, {
+  word: "word",
+  pos: "noun",
+  chinese: "字組"
+}, {
+  word: "workgroups",
+  pos: "noun",
+  chinese: "工作群組"
+}, {
+  word: "workstation",
+  pos: "noun",
+  chinese: "工作站"
+}, {
+  word: "worm",
+  pos: "noun",
+  chinese: "網路蠕蟲；電腦蠕蟲"
+}, {
+  word: "www",
+  pos: "noun",
+  chinese: "全球資訊網路(簡稱)"
+}, {
+  word: "Youku",
+  pos: "noun",
+  chinese: "優酷影片網；一個影片網站(中國)"
+}, {
+  word: "YouTube",
+  pos: "noun",
+  chinese: "一個影片網站(美國)"
+}, {
+  word: "zettabyte",
+  pos: "noun",
+  chinese: "皆位元組(單位)"
+}];
+let currentWord = null;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let gameStarted = false;
+let wordsUsed = [];
+let wordsRemaining = 50;
+let startTime = null;
+let timerInterval = null;
+const startBtn = document.getElementById('startBtn');
+const speakBtn = document.getElementById('speakBtn');
+const userInput = document.getElementById('userInput');
+const wordDisplay = document.getElementById('wordDisplay');
+const feedback = document.getElementById('feedback');
+const scoreDisplay = document.getElementById('score');
+const statsDisplay = document.getElementById('stats');
+const beeIcon = document.getElementById('beeIcon');
+const levelUp = document.getElementById('levelUp');
+const chineseTranslation = document.getElementById('chineseTranslation');
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.9;
+  speechSynthesis.speak(utterance);
+}
+function getRandomWord() {
+  const availableWords = words.filter(word => !wordsUsed.includes(word));
+  const randomWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+  wordsUsed.push(randomWord);
+  return randomWord;
+}
+function updateStats() {
+  statsDisplay.textContent = `Correct: ${correctCount} | Wrong: ${wrongCount}`;
+}
+function checkBeeGrowth() {
+  if (correctCount % 20 === 0 && correctCount > 0) {
+    beeIcon.classList.add('bee-grow');
+    levelUp.textContent = `Congratulations! You've reached ${correctCount} correct spellings! `;
+  }
+}
+function formatTime(ms) {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = (ms % 60000 / 1000).toFixed(0);
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+function showSummary() {
+  gameStarted = false;
+  wordDisplay.textContent = "Game Complete!";
+  userInput.disabled = true;
+  speakBtn.disabled = true;
+  startBtn.disabled = true;
+  chineseTranslation.textContent = "";
+  clearInterval(timerInterval);
+  const endTime = Date.now();
+  const totalTime = endTime - startTime;
+  const summary = `
+    Game Summary
+    ————————————
+    Final Score: ${score}
+    Correct Answers: ${correctCount}
+    Wrong Answers: ${wrongCount}
+    Total Time: ${formatTime(totalTime)}
+    Completion Time: ${formatDateTime()}
+  `;
+  feedback.textContent = summary;
+  feedback.style.whiteSpace = "pre-line";
+  feedback.style.textAlign = "left";
+}
+function checkAnswer() {
+  const userAnswer = userInput.value.trim();
+  wordsRemaining--;
+  if (userAnswer === currentWord.word) {
+    correctCount++;
+    score++;
+    feedback.textContent = `Correct! `;
+    feedback.className = "feedback correct";
+    checkBeeGrowth();
+  } else {
+    wrongCount++;
+    feedback.textContent = `Incorrect. The correct spelling is: ${currentWord.word}`;
+    feedback.className = "feedback incorrect";
+    levelUp.textContent = "";
+  }
+  scoreDisplay.textContent = `Score: ${score}`;
+  updateStats();
+  if (wordsRemaining === 0) {
+    setTimeout(showSummary, 2000);
+  } else {
+    setTimeout(() => {
+      userInput.value = "";
+      levelUp.textContent = "";
+      nextWord();
+    }, 3000);
+  }
+}
+function nextWord() {
+  currentWord = getRandomWord();
+  wordDisplay.textContent = `Words remaining: ${wordsRemaining}`;
+  chineseTranslation.textContent = `[${currentWord.pos}] ${currentWord.chinese} (${currentWord.word.length} letters)`;
+  feedback.textContent = "";
+  feedback.className = "feedback";
+  speak(currentWord.word);
+}
+startBtn.addEventListener('click', () => {
+  if (!gameStarted) {
+    gameStarted = true;
+    startBtn.textContent = "Submit";
+    userInput.disabled = false;
+    speakBtn.disabled = false;
+    wordsUsed = [];
+    wordsRemaining = 50;
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    startTime = Date.now();
+    const timerDisplay = document.getElementById('timer');
+    timerInterval = setInterval(() => {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - startTime;
+      timerDisplay.textContent = `Time: ${formatTime(elapsedTime)}`;
+    }, 1000);
+    nextWord();
+  } else {
+    checkAnswer();
+  }
+});
+speakBtn.addEventListener('click', () => {
+  if (currentWord) {
+    speak(currentWord.word);
+  }
+});
+userInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter' && gameStarted) {
+    checkAnswer();
+  }
+});</script>
+</body></html>
